@@ -1,12 +1,12 @@
 package dukono.minidsl;
 
-import java.util.List;
-import java.util.function.UnaryOperator;
-
 import com.google.common.reflect.TypeToken;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unchecked")
 @Getter(AccessLevel.PROTECTED)
@@ -48,17 +48,10 @@ public abstract class AnchorHolderMainLogical<
 		this.addQuery(Query.CLOSE);
 		return (X) this;
 	}
-
-	// @formatter:off
-  public X collapseAnd() {
-    // @formatter:on
+	public X collapseAnd() {
 		return this.collapse(Query.AND);
 	}
-
-	// @formatter:off
-  
-  public X collapseOr() {
-    // @formatter:on
+	public X collapseOr() {
 
 		return this.collapse(Query.OR);
 	}

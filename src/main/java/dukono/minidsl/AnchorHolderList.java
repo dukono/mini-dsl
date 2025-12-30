@@ -164,11 +164,7 @@ public abstract class AnchorHolderList<
 			return n;
 		}).orElseGet(() -> {
 			final Class<? extends N> rawType = (Class<? extends N>) this.oneClazz.getRawType();
-			try {
-				return rawType.getConstructor().newInstance();
-			} catch (final Exception e) {
-				throw new RuntimeException(e);
-			}
+			return AnchorHolderMain.newType(rawType);
 		});
 
 	}

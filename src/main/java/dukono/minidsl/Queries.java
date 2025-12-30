@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -23,7 +22,6 @@ import java.util.stream.Stream;
 @Builder
 @Data
 public class Queries {
-	private static final Random RANDOM = new Random();
 
 	private static final Comparator<String> comparing = Comparator.comparing(s1 -> s1, String::compareTo);
 
@@ -121,11 +119,6 @@ public class Queries {
 
 	public boolean empty() {
 		return this.getQueries().isEmpty();
-	}
-
-	private static int randomNonZeroInRange() {
-		final int num = RANDOM.nextInt(20);
-		return num < 10 ? num - 10 : num - 9;
 	}
 
 }

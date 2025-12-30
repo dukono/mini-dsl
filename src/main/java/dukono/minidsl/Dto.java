@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 @Setter
 public abstract class Dto {
 
+	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
 	@Default
 	private List<Queries> filters = new ArrayList<>();
 
@@ -100,7 +102,7 @@ public abstract class Dto {
 					jsonEntries.add(node);
 				}));
 		try {
-			return new ObjectMapper().writeValueAsString(jsonEntries);
+			return JSON_MAPPER.writeValueAsString(jsonEntries);
 		} catch (final Exception e) {
 			return "[]"; // fallback
 		}
@@ -111,10 +113,8 @@ public abstract class Dto {
 			return (T) this;
 		}
 		try {
-			final ObjectMapper mapper = new ObjectMapper();
-			final List<Map<String, Object>> nodes = mapper.readValue(json,
-					new TypeReference<List<Map<String, Object>>>() {
-					});
+			final List<Map<String, Object>> nodes = JSON_MAPPER.readValue(json, new TypeReference<>() {
+			});
 			final List<String> expressions = nodes.stream().map(node -> {
 				final String key = Optional.ofNullable(node.get("key")).map(Object::toString).orElse(null);
 				final String op = Optional.ofNullable(node.get("op")).map(Object::toString).orElse(null);
@@ -125,7 +125,7 @@ public abstract class Dto {
 				if (key != null && op != null) {
 					return key + " " + op;
 				}
-				if (op != null && key == null) {
+				if (op != null) {
 					return op;
 				}
 				if (key != null) {

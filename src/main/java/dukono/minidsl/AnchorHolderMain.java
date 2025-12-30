@@ -8,7 +8,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
@@ -23,6 +28,8 @@ public abstract class AnchorHolderMain<
     X extends AnchorHolderMain<F,S,X,W>,
     W extends AnchorOperationsBasic<X>> {
   // @formatter:on
+
+	private static final Map<Class<?>, Constructor<?>> CONSTRUCTOR_CACHE = new ConcurrentHashMap<>();
 
 	protected Queries queries;
 
@@ -48,10 +55,19 @@ public abstract class AnchorHolderMain<
 	}
 
 	public W field(final Function<F, FieldHolder> wwFunction) {
+		Objects.requireNonNull(wwFunction, "Field selector function cannot be null");
+
 		final FieldHolder apply = wwFunction.apply(this.fields);
+		Objects.requireNonNull(apply, "Field selector must return a valid FieldHolder, got null");
+
+		final String fieldName = apply.getName();
+		if (fieldName == null || fieldName.isBlank()) {
+			throw new IllegalArgumentException("Field name cannot be null or blank");
+		}
+
 		final W w = this.newType(this.opClazz);
 		w.setHolder((X) this);
-		w.setName(apply.getName());
+		w.setName(fieldName);
 		return w;
 	}
 
@@ -103,10 +119,30 @@ public abstract class AnchorHolderMain<
 	}
 
 	static <Y> Y newType(final Class<? extends Y> rawType) {
+		Objects.requireNonNull(rawType, "Target class cannot be null");
+
 		try {
-			return rawType.getConstructor().newInstance();
+			@SuppressWarnings("unchecked")
+			final Constructor<Y> constructor = (Constructor<Y>) CONSTRUCTOR_CACHE.computeIfAbsent(rawType, clazz -> {
+				try {
+					return clazz.getDeclaredConstructor();
+				} catch (final NoSuchMethodException e) {
+					throw new DslInstantiationException(clazz, "No default (no-args) constructor found", e);
+				}
+			});
+			return constructor.newInstance();
+		} catch (final InstantiationException e) {
+			throw new DslInstantiationException(rawType, "Class is abstract or interface", e);
+		} catch (final IllegalAccessException e) {
+			throw new DslInstantiationException(rawType, "Constructor is not accessible", e);
+		} catch (final InvocationTargetException e) {
+			final Throwable cause = e.getCause();
+			throw new DslInstantiationException(rawType,
+					"Constructor threw an exception: " + (cause != null ? cause.getMessage() : "unknown"), cause);
+		} catch (final DslInstantiationException e) {
+			throw e;
 		} catch (final Exception e) {
-			throw new RuntimeException(e);
+			throw new DslInstantiationException(rawType, "Unexpected error during instantiation", e);
 		}
 	}
 
