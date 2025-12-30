@@ -1,5 +1,6 @@
 package dukono.minidsl;
 
+import dukono.minidsl.example.AnchorMain;
 import org.junit.jupiter.api.Test;
 
 class ApiTest {

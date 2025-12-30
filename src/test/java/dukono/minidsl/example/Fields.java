@@ -1,4 +1,6 @@
-package dukono.minidsl;
+package dukono.minidsl.example;
+
+import dukono.minidsl.Field;
 
 public class Fields extends Field {
 

@@ -1,7 +1,8 @@
-package dukono.minidsl;
+package dukono.minidsl.example;
 
 import java.util.Set;
 
+import dukono.minidsl.DtoString;
 import lombok.Getter;
 
 @Getter

@@ -1,4 +1,4 @@
-package dukono.minidsl;
+package dukono.minidsl.example;
 
 import java.util.Collection;
 import java.util.List;
@@ -6,17 +6,23 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 import com.google.common.reflect.TypeToken;
+import dukono.minidsl.AnchorHolderMainActions;
+import dukono.minidsl.Comparator;
+import dukono.minidsl.ComparatorEnum;
+import dukono.minidsl.DtoString;
+import dukono.minidsl.Query;
+import dukono.minidsl.RemoveBy;
 import dukono.minidsl.RemoveBy.Remover;
 
 public class AnchorActions
 		extends
-			AnchorHolderMainActions<Fields, DtoString, AnchorActions, AnchorOperationsLogicalC<AnchorActions>> {
+			AnchorHolderMainActions<Fields, DtoString, AnchorActions, AnchorOperationsLogical<AnchorActions>> {
 
 	public AnchorActions() {
 		super(new TypeToken<DtoString>() {
 		}, new TypeToken<AnchorList<?>>() {
 		}, new TypeToken<AnchorActions>() {
-		}, new TypeToken<AnchorOperationsLogicalC<AnchorActions>>() {
+		}, new TypeToken<AnchorOperationsLogical<AnchorActions>>() {
 		}, new Fields());
 	}
 

@@ -1,6 +1,8 @@
-package dukono.minidsl;
+package dukono.minidsl.example;
 
 import com.google.common.reflect.TypeToken;
+import dukono.minidsl.AnchorHolderList;
+import dukono.minidsl.DtoString;
 import lombok.Getter;
 
 @Getter

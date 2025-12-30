@@ -1,19 +1,21 @@
-package dukono.minidsl;
-
-import com.google.common.reflect.TypeToken;
+package dukono.minidsl.example;
 
 import java.util.List;
 import java.util.function.UnaryOperator;
 
-public class AnchorLogicalMain
-		extends
-			AnchorHolderMainLogical<Fields, DtoString, AnchorLogicalMain, AnchorOperationsLogicalC<AnchorLogicalMain>> {
-
+import com.google.common.reflect.TypeToken;
+import dukono.minidsl.AnchorHolderMainLogical;
+import dukono.minidsl.DtoString;
+import dukono.minidsl.Query;
+// @formatter:off
+public class AnchorLogicalMain extends
+			AnchorHolderMainLogical<Fields, DtoString, AnchorLogicalMain, AnchorOperationsLogical<AnchorLogicalMain>> {
+	// @formatter:on
 	public AnchorLogicalMain() {
 		super(new TypeToken<DtoString>() {
 		}, new TypeToken<AnchorList<?>>() {
 		}, new TypeToken<AnchorLogicalMain>() {
-		}, new TypeToken<AnchorOperationsLogicalC<AnchorLogicalMain>>() {
+		}, new TypeToken<AnchorOperationsLogical<AnchorLogicalMain>>() {
 		}, new Fields());
 	}
 
