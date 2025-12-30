@@ -1,8 +1,5 @@
 package dukono.minidsl;
 
-import java.util.Optional;
-import java.util.function.Function;
-
 import com.google.common.reflect.TypeToken;
 import dukono.minidsl.Field.FieldHolder;
 import lombok.AccessLevel;
@@ -10,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Optional;
+import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
 @Getter(AccessLevel.PROTECTED)
@@ -92,10 +92,6 @@ public abstract class AnchorHolderMain<
 	// ----Instancietors
 	<L, V extends AnchorHolderList<F, ?, X, S, V, L>> V newList() {
 		return newType((Class<? extends V>) this.listClazz.getRawType());
-	}
-
-	X newSelf() {
-		return newType((Class<? extends X>) this.self.getRawType());
 	}
 
 	S newObj() {

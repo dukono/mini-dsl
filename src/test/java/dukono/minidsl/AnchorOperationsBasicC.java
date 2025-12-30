@@ -3,11 +3,6 @@ package dukono.minidsl;
 import java.util.Collection;
 import java.util.Optional;
 
-import com.inditex.geret.commons.api.request22.AnchorHolderMain;
-import com.inditex.geret.commons.api.request22.AnchorOperationsBasic;
-import com.inditex.geret.commons.api.request22.Operations;
-import com.inditex.geret.commons.api.request22.Query;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
