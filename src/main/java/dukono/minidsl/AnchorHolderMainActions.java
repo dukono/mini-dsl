@@ -1,10 +1,5 @@
 package dukono.minidsl;
 
-import com.google.common.reflect.TypeToken;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +7,11 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import com.google.common.reflect.TypeToken;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 @SuppressWarnings("unchecked")
 @Getter(AccessLevel.PROTECTED)

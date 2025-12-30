@@ -1,5 +1,10 @@
 package dukono.minidsl;
 
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,18 +12,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 @SuperBuilder
 @Getter(AccessLevel.PROTECTED)
 @Setter(AccessLevel.PROTECTED)
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnchorOperationsBasic<H extends AnchorHolderMain<? extends Field, ? extends Dto, H, ? extends AnchorOperationsBasic<H>>> {
-
+// @formatter:off
+public class AnchorOperationsBasic<
+		H extends AnchorHolderMain<? extends Field, ? extends Dto, H, ? extends AnchorOperationsBasic<H>>> {
+	// @formatter:off
 	protected String name;
 
 	protected H holder;

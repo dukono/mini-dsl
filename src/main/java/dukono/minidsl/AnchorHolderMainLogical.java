@@ -1,12 +1,12 @@
 package dukono.minidsl;
 
+import java.util.List;
+import java.util.function.UnaryOperator;
+
 import com.google.common.reflect.TypeToken;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
-import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unchecked")
 @Getter(AccessLevel.PROTECTED)
@@ -74,7 +74,7 @@ public abstract class AnchorHolderMainLogical<
       T extends AnchorHolderList<F, N, X, S, T, L>> X collapse(
       final List<L> list, final UnaryOperator<N> a, final Query query) {
     // @formatter:on
-		final T holder = this.newlist();
+		final T holder = this.newList();
 		holder.setList(list);
 		final S dtoBuilt = holder.addForEachCollapsing(a, query).getDto();
 		return this.addDto(dtoBuilt);
@@ -85,7 +85,7 @@ public abstract class AnchorHolderMainLogical<
       T extends AnchorHolderList<F, N, X, S, T, L>> X notCollapse(
       final List<L> list, final UnaryOperator<N> a) {
     // @formatter:on
-		final T holder = this.newlist();
+		final T holder = this.newList();
 		holder.setList(list);
 		final S dtoBuilt = holder.addForEach(a).getDto();
 		return this.addDto(dtoBuilt);
@@ -95,7 +95,7 @@ public abstract class AnchorHolderMainLogical<
    <V extends AnchorHolderOne<F, S, V,Object, ?>, 
       T extends AnchorHolderList<F, V, X, S, T, Object>> X collapse(final Query val) {
     // @formatter:on
-		final T newlist = this.newlist();
+		final T newlist = this.newList();
 		newlist.setList(List.of());
 		if (val == null) {
 			newlist.collapse(this.getDto());
