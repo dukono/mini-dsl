@@ -14,10 +14,10 @@ import dukono.minidsl.Query;
 import dukono.minidsl.RemoveBy;
 import dukono.minidsl.RemoveBy.Remover;
 
-public class AnchorActions
-		extends
+// @formatter:off
+public class AnchorActions extends
 			AnchorHolderMainActions<Fields, DtoString, AnchorActions, AnchorOperationsLogical<AnchorActions>> {
-
+	// @formatter:on
 	public AnchorActions() {
 		super(new TypeToken<DtoString>() {
 		}, new TypeToken<AnchorList<?>>() {

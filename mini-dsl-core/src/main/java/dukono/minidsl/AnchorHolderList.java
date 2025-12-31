@@ -1,5 +1,10 @@
 package dukono.minidsl;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+
 import com.google.common.reflect.TypeToken;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -7,11 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unchecked")
 @Getter(AccessLevel.PACKAGE)
@@ -57,20 +57,20 @@ public abstract class AnchorHolderList<
 		this(ob, oneClazz, objectClazz);
 		this.list = list;
 	}
-
-	public A collapseOr(final UnaryOperator<N> a) {
-		this.addForEachCollapsing(a, Query.OR);// add
-		final A requestApiObject = this.newObject();
-		requestApiObject.addDto(this.getDto());
-		return requestApiObject;
-	}
-
-	public A collapseAnd(final UnaryOperator<N> a) {
-		this.addForEachCollapsing(a, Query.AND);// add
-		final A requestApiObject = this.newObject();
-		requestApiObject.addDto(this.getDto());
-		return requestApiObject;
-	}
+	//
+	// public A collapseOr(final UnaryOperator<N> a) {
+	// this.addForEachCollapsing(a, Query.OR);// add
+	// final A requestApiObject = this.newObject();
+	// requestApiObject.addDto(this.getDto());
+	// return requestApiObject;
+	// }
+	//
+	// public A collapseAnd(final UnaryOperator<N> a) {
+	// this.addForEachCollapsing(a, Query.AND);// add
+	// final A requestApiObject = this.newObject();
+	// requestApiObject.addDto(this.getDto());
+	// return requestApiObject;
+	// }
 
 	public A addForEach(final UnaryOperator<N> a) {
 		this.addForEachNoCollapse(a);
@@ -79,7 +79,7 @@ public abstract class AnchorHolderList<
 		return requestApiObject;
 	}
 
-	protected X addForEachCollapsing(final UnaryOperator<N> a, final Query val) {
+	protected Queries addForEachCollapsing(final UnaryOperator<N> a, final Query val) {
 
 		final S dto = this.newDto();
 		for (final O t : this.list) {
@@ -88,15 +88,13 @@ public abstract class AnchorHolderList<
 			final S unitDto = a.apply(singleUnitApi).other().getDto();
 			dto.addFilter(unitDto.getFilters());
 		}
+		final Queries collapse;
 		if (val == null) {
-			this.collapse(dto);
+			collapse = this.collapse(dto);
 		} else {
-			this.collapse(dto, val);
+			collapse = this.collapse(dto, val);
 		}
-
-		this.changeDto(dto);
-
-		return (X) this;
+		return collapse;
 	}
 
 	protected void addForEachNoCollapse(final UnaryOperator<N> a) {
@@ -113,14 +111,10 @@ public abstract class AnchorHolderList<
 
 	}
 
-	protected void collapse(final S obj, final Query andOr) {
-		final List<Queries> filters = obj.getFilters();
+	protected Queries collapse(final S obj, final Query andOr) {
+		final List<Queries> filters = obj.getFiltersSorted();
 		final Queries neww = Queries.builder().build();
 		if (CollectionUtils.isNotEmpty(filters)) {
-			filters.getFirst().addFirst(Query.OPEN);
-			filters.getLast().addLast(Query.CLOSE);
-		}
-		if (CollectionUtils.isNotEmpty(filters) && filters.size() > 1) {
 
 			for (final Queries queries : filters) {
 				if (!CHECK_IF_ENDS_WITH_OP.test(queries) && !filters.getLast().equals(queries)) {
@@ -128,21 +122,22 @@ public abstract class AnchorHolderList<
 				}
 				neww.addAll(queries);
 			}
-			obj.setFilters(neww.toList());
+			// obj.setFilters(neww.toList());
 		}
+		return neww;
 
 	}
 
-	protected void collapse(final S obj) {
-		final List<Queries> filters = obj.getFilters();
+	protected Queries collapse(final S obj) {
+		final List<Queries> filters = obj.getFiltersSorted();
 		final Queries neww = Queries.builder().build();
 
 		if (CollectionUtils.isNotEmpty(filters)) {
 			for (final Queries queries : filters) {
 				neww.addAll(queries);
 			}
-			obj.setFilters(neww.toList());
 		}
+		return neww;
 	}
 
 	protected void changeDto(final S dto) {
@@ -161,10 +156,13 @@ public abstract class AnchorHolderList<
 		return this.oneClazzInstance.map(n -> {
 			n.setQueries(Queries.builder().build());
 			n.setItemUnit(null);
+			n.setDto(null);
 			return n;
 		}).orElseGet(() -> {
 			final Class<? extends N> rawType = (Class<? extends N>) this.oneClazz.getRawType();
-			return AnchorHolderMain.newType(rawType);
+			final N n = AnchorHolderMain.newType(rawType);
+			this.oneClazzInstance = Optional.of(n);
+			return n;
 		});
 
 	}

@@ -1,13 +1,5 @@
 package dukono.minidsl;
 
-import com.google.common.reflect.TypeToken;
-import dukono.minidsl.Field.FieldHolder;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -15,6 +7,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+
+import com.google.common.reflect.TypeToken;
+import dukono.minidsl.Field.FieldHolder;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @SuppressWarnings("unchecked")
 @Getter(AccessLevel.PROTECTED)
@@ -78,7 +78,7 @@ public abstract class AnchorHolderMain<
 	}
 
 	// -----Getters and Setters
-	void addQuery(final Query query) {
+	protected void addQuery(final Query query) {
 		this.getQueries().add(query);
 	}
 

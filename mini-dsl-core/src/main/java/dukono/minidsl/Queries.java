@@ -1,12 +1,5 @@
 package dukono.minidsl;
 
-import com.google.common.collect.Lists;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -17,23 +10,44 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Lists;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class Queries {
+public class Queries implements Comparable<Queries> {
 
 	private static final Comparator<String> comparing = Comparator.comparing(s1 -> s1, String::compareTo);
 
 	@Default
 	List<Query> queries = new ArrayList<>();
 
+	private transient String cachedFilterString;
+	private transient int cachedHashCode = 0;
+	private transient boolean hashCodeCached = false;
+
+	Queries(final List<Query> queries) {
+		this.queries = queries;
+	}
 	public void add(final Query filter) {
-		Optional.ofNullable(filter).ifPresent(s -> this.getQueries().add(s));
+		Optional.ofNullable(filter).ifPresent(s -> {
+			this.getQueries().add(s);
+			this.invalidateCache();
+		});
 	}
 
 	public void addAll(final Queries filter) {
-		Optional.ofNullable(filter).ifPresent(s -> this.getQueries().addAll(s.getQueries()));
+		Optional.ofNullable(filter).filter(Queries::notEmpty).ifPresent(s -> {
+			this.getQueries().addAll(s.getQueries());
+			this.invalidateCache();
+		});
 	}
 
 	public void addFirst(final Query filter) {
@@ -43,11 +57,15 @@ public class Queries {
 			newQueries.addAll(this.getQueries());
 			this.queries.clear();
 			this.queries.addAll(newQueries);
+			this.invalidateCache();
 		});
 	}
 
 	public void addLast(final Query filter) {
-		Optional.ofNullable(filter).ifPresent(s -> this.queries.addLast(s));
+		Optional.ofNullable(filter).ifPresent(s -> {
+			this.queries.addLast(s);
+			this.invalidateCache();
+		});
 	}
 
 	public boolean endWithSomeOf(final Query... filter) {
@@ -56,8 +74,10 @@ public class Queries {
 	}
 
 	public void replace(final Query toFind, final Query newValue, final Function<Query, Predicate<Query>> compareBy) {
-		Optional.ofNullable(toFind).ifPresent(find -> this.getQueries().stream()
-				.filter(q -> compareBy.apply(q).test(find)).forEach(val -> val.set(newValue)));
+		Optional.ofNullable(toFind).ifPresent(find -> {
+			this.getQueries().stream().filter(q -> compareBy.apply(q).test(find)).forEach(val -> val.set(newValue));
+			this.invalidateCache();
+		});
 	}
 
 	public void replace(final Queries toFind, final Queries newValue) {
@@ -79,6 +99,7 @@ public class Queries {
 							Optional.ofNullable(newValue).map(Queries::getQueries).ifPresent(replaced::addAll);
 							replaced.addAll(source.subList(i + patternSize, source.size()));
 							this.setQueries(replaced);
+							this.invalidateCache();
 							break;
 						}
 					}
@@ -88,8 +109,11 @@ public class Queries {
 
 	public void replace(final List<Query> request, final Function<Query, Predicate<Query>> compareBy) {
 
-		Optional.ofNullable(request).ifPresent(requestValues -> requestValues.forEach(newValues -> this.getQueries()
-				.stream().filter(q -> compareBy.apply(q).test(newValues)).forEach(val -> val.set(newValues))));
+		Optional.ofNullable(request).ifPresent(requestValues -> {
+			requestValues.forEach(newValues -> this.getQueries().stream()
+					.filter(q -> compareBy.apply(q).test(newValues)).forEach(val -> val.set(newValues)));
+			this.invalidateCache();
+		});
 	}
 
 	public boolean match(final List<Query> request, final Function<Query, Predicate<Query>> compareBy) {
@@ -100,8 +124,11 @@ public class Queries {
 	}
 
 	public void remove(final List<Query> request, final Function<Query, Predicate<Query>> compareBy) {
-		Optional.ofNullable(request).ifPresent(requestValues -> this.getQueries()
-				.removeIf(find -> requestValues.stream().anyMatch(core -> compareBy.apply(core).test(find))));
+		Optional.ofNullable(request).ifPresent(requestValues -> {
+			this.getQueries()
+					.removeIf(find -> requestValues.stream().anyMatch(core -> compareBy.apply(core).test(find)));
+			this.invalidateCache();
+		});
 
 	}
 
@@ -118,7 +145,60 @@ public class Queries {
 	}
 
 	public boolean empty() {
-		return this.getQueries().isEmpty();
+		return CollectionUtils.isEmpty(this.getQueries());
+	}
+	public boolean notEmpty() {
+		return !this.empty();
+	}
+
+	/**
+	 * Invalidates cached values. Call this method when queries list is modified.
+	 */
+	private void invalidateCache() {
+		this.cachedFilterString = null;
+		this.hashCodeCached = false;
+		this.cachedHashCode = 0;
+	}
+
+	/**
+	 * Gets the filter string with lazy caching for performance optimization. This
+	 * is particularly important for sorting operations where compareTo is called
+	 * many times.
+	 * 
+	 * @return cached filter string
+	 */
+	private String getCachedFilterString() {
+		if (this.cachedFilterString == null) {
+			this.cachedFilterString = this.filtersAsString();
+		}
+		return this.cachedFilterString;
+	}
+
+	@Override
+	public int compareTo(final Queries o) {
+
+		return this.getCachedFilterString().compareTo(o.getCachedFilterString());
+	}
+
+	@Override
+	public int hashCode() {
+		if (!this.hashCodeCached) {
+			this.cachedHashCode = this.getCachedFilterString().hashCode();
+			this.hashCodeCached = true;
+		}
+		return this.cachedHashCode;
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || this.getClass() != obj.getClass()) {
+			return false;
+		}
+		final Queries other = (Queries) obj;
+		return this.getCachedFilterString().equals(other.getCachedFilterString());
 	}
 
 }

@@ -1,12 +1,12 @@
 package dukono.minidsl;
 
+import java.util.List;
+import java.util.function.UnaryOperator;
+
 import com.google.common.reflect.TypeToken;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
-import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unchecked")
 @Getter(AccessLevel.PROTECTED)
@@ -48,11 +48,14 @@ public abstract class AnchorHolderMainLogical<
 		this.addQuery(Query.CLOSE);
 		return (X) this;
 	}
+	public X any(final String alias) {
+		this.addQuery(Query.from(alias));
+		return (X) this;
+	}
 	public X collapseAnd() {
 		return this.collapse(Query.AND);
 	}
 	public X collapseOr() {
-
 		return this.collapse(Query.OR);
 	}
 
@@ -69,8 +72,8 @@ public abstract class AnchorHolderMainLogical<
     // @formatter:on
 		final T holder = this.newList();
 		holder.setList(list);
-		final S dtoBuilt = holder.addForEachCollapsing(a, query).getDto();
-		return this.addDto(dtoBuilt);
+		this.getQueries().addAll(holder.addForEachCollapsing(a, query));
+		return (X) this;
 	}
 
 	// @formatter:off
@@ -87,15 +90,20 @@ public abstract class AnchorHolderMainLogical<
 	// @formatter:off
    <V extends AnchorHolderOne<F, S, V,Object, ?>, 
       T extends AnchorHolderList<F, V, X, S, T, Object>> X collapse(final Query val) {
+		 if(this.getDto().getFilters().size()<2){
+			 return (X)this;
+		 }
     // @formatter:on
 		final T newlist = this.newList();
 		newlist.setList(List.of());
+		final Queries collapse;
 		if (val == null) {
-			newlist.collapse(this.getDto());
+			collapse = newlist.collapse(this.getDto());
 		} else {
-			newlist.collapse(this.getDto(), val);
+			collapse = newlist.collapse(this.getDto(), val);
 		}
 
+		this.getDto().removeFilters().addFilter(collapse);
 		return (X) this;
 	}
 

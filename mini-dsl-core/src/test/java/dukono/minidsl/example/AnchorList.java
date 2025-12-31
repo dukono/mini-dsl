@@ -6,13 +6,12 @@ import dukono.minidsl.DtoString;
 import lombok.Getter;
 
 @Getter
+// @formatter:off
 public class AnchorList<T>
-		extends
-			AnchorHolderList<Fields, AnchorOne<T>, AnchorLogicalMain, DtoString, AnchorList<T>, T> {
+		extends AnchorHolderList<Fields, AnchorOne<T>, AnchorLogicalMain, DtoString, AnchorList<T>, T> {
 
 	public AnchorList() {
-		super(DtoString.class, new TypeToken<>() {
-		}, AnchorLogicalMain.class);
+		super(DtoString.class, new TypeToken<>() {}, AnchorLogicalMain.class);
 	}
-
+	// @formatter:on
 }

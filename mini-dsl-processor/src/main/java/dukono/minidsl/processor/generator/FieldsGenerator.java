@@ -36,14 +36,13 @@ public class FieldsGenerator {
 
 		// Add fields
 		for (final DslField field : context.getFields()) {
-			final String fieldName = this.getFieldName(field);
+			final String fieldName = field.javaName();
 			final String fieldValue = field.value();
 
 			FieldSpec fieldSpec = FieldSpec
 					.builder(ClassName.get("dukono.minidsl", "Field", "FieldHolder"), fieldName, Modifier.PUBLIC,
 							Modifier.FINAL)
-					.initializer("$T.from($S)", ClassName.get("dukono.minidsl", "Field"), fieldValue.toUpperCase())
-					.build();
+					.initializer("$T.from($S)", ClassName.get("dukono.minidsl", "Field"), fieldValue).build();
 
 			if (!field.description().isEmpty()) {
 				fieldSpec = fieldSpec.toBuilder().addJavadoc("$L\n", field.description()).build();
@@ -59,12 +58,5 @@ public class FieldsGenerator {
 				.addFileComment("\nDO NOT EDIT - This file is auto-generated").build();
 
 		javaFile.writeTo(filer);
-	}
-
-	private String getFieldName(final DslField field) {
-		if (!field.javaName().isEmpty()) {
-			return field.javaName();
-		}
-		return field.value().toUpperCase();
 	}
 }

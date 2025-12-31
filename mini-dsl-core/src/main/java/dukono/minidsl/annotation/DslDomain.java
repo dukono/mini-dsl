@@ -19,10 +19,11 @@ import java.lang.annotation.Target;
  * <pre>
  * {
  * 	&#64;code
- * 	&#64;DslDomain(name = "User", packageName = "com.example.dsl", fields = {@DslField(value = "name", type = "String"),
- * 			&#64;DslField(value = "age", type = "int"), @DslField(value = "email", type = "String")}, operations = {
+ * 	&#64;DslDomain(name = "User", packageName = "com.example.dsl", fields = {
+ * 			&#64;DslField(value = "name", javaName = "NAME"), &#64;DslField(value = "age", javaName = "AGE"),
+ * 			&#64;DslField(value = "email", javaName = "EMAIL")}, operations = {
  * 					&#64;DslOperation(name = "equalTo", operator = "eq"),
- * 					@DslOperation(name = "greaterThan", operator = "gt")}, dtoClass = "com.example.UserDto")
+ * 					&#64;DslOperation(name = "greaterThan", operator = "gt")}, dtoClass = "com.example.UserDto")
  * 	public class UserDslConfig {
  * 	}
  * }

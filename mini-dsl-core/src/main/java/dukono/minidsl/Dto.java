@@ -1,5 +1,13 @@
 package dukono.minidsl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -8,14 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
 
 @SuppressWarnings("unchecked")
 @SuperBuilder
@@ -27,63 +28,129 @@ public abstract class Dto {
 
 	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
+	// ⚡ Comparator reutilizable - evita crear instancias en cada sort
+	private static final java.util.Comparator<Queries> QUERIES_COMPARATOR = Queries::compareTo;
+
 	@Default
 	private List<Queries> filters = new ArrayList<>();
 
+	// ⚡ Cache para evitar re-ordenar constantemente
+	private transient List<Queries> sortedFiltersCache = null;
+	private transient boolean filtersDirty = true;
+
+	/**
+	 * Marks filters as dirty to invalidate sorted cache. Call this after any
+	 * modification to filters list.
+	 */
+	private void markFiltersDirty() {
+		this.filtersDirty = true;
+		this.sortedFiltersCache = null;
+	}
+
 	public <T extends Dto> T addFilter(final Queries filter) {
-		Optional.ofNullable(filter).ifPresent(s -> this.getFilters().add(s));
+		Optional.ofNullable(filter).filter(Queries::notEmpty).ifPresent(s -> {
+			this.filters.add(s);
+			this.markFiltersDirty();
+		});
 		return (T) this;
 	}
 
 	public <T extends Dto> T addFilter(final List<Queries> filters) {
-		Optional.ofNullable(filters).ifPresent(s -> this.getFilters().addAll(s));
+		Optional.ofNullable(filters).filter(CollectionUtils::isNotEmpty).ifPresent(s -> {
+			this.filters.addAll(s);
+			this.markFiltersDirty();
+		});
 		return (T) this;
 	}
 
 	// replaceFilters-----------------------------------------
 	public <T extends Dto> T replaceFilters(final Map<Queries, Queries> request) {
-		Optional.ofNullable(request).ifPresent(requestValues -> requestValues
-				.forEach((toFind, newValue) -> this.getFilters().forEach(core -> core.replace(toFind, newValue))));
+		Optional.ofNullable(request).ifPresent(requestValues -> {
+			// ⚡ Acceso directo a filters sin ordenar
+			requestValues.forEach((toFind, newValue) -> this.filters.forEach(core -> core.replace(toFind, newValue)));
+			this.markFiltersDirty();
+		});
 		return (T) this;
 	}
 
 	public <T extends Dto> T replaceFilters(final Dto dtoWithNewValues, final ComparatorEnum compareBy) {
 		Optional.ofNullable(dtoWithNewValues).ifPresent(requestValues -> {
-			requestValues.getFilters().forEach(queries -> this.getFilters()
-					.forEach(core -> core.replace(queries.getQueries(), compareBy.getValue())));
+			// ⚡ Acceso directo a filters sin ordenar
+			requestValues.filters.forEach(
+					queries -> this.filters.forEach(core -> core.replace(queries.getQueries(), compareBy.getValue())));
+			this.markFiltersDirty();
 		});
 		return (T) this;
 	}
 
 	// removeFilters-----------------------------------------
 	public <T extends Dto> T removeFiltersExactMatch(final List<Queries> toRemove) {
-		Optional.ofNullable(toRemove).ifPresent(requestValues -> requestValues.forEach(toFind -> {
-			this.getFilters().forEach(core -> core.replace(toFind, null));
-			this.getFilters().removeIf(Queries::empty);
-		}));
+		Optional.ofNullable(toRemove).ifPresent(requestValues -> {
+			// ⚡ Acceso directo a filters sin ordenar
+			requestValues.forEach(toFind -> {
+				this.filters.forEach(core -> core.replace(toFind, null));
+				this.filters.removeIf(Queries::empty);
+			});
+			this.markFiltersDirty();
+		});
 		return (T) this;
 	}
 
 	public <T extends Dto> T removeFiltersQuery(final List<Queries> toRemove, final ComparatorEnum compareBy) {
-		Optional.ofNullable(toRemove).ifPresent(requestValues -> requestValues.forEach(
-				toFind -> this.getFilters().forEach(core -> core.remove(toFind.getQueries(), compareBy.getValue()))));
+		Optional.ofNullable(toRemove).ifPresent(requestValues -> {
+			// ⚡ Acceso directo a filters sin ordenar
+			requestValues.forEach(
+					toFind -> this.filters.forEach(core -> core.remove(toFind.getQueries(), compareBy.getValue())));
+			this.markFiltersDirty();
+		});
 		return (T) this;
 	}
 
 	public <T extends Dto> T removeFiltersFull(final List<Queries> toRemove, final ComparatorEnum compareBy) {
-		Optional.ofNullable(toRemove).ifPresent(requestValues -> requestValues.forEach(
-				toFind -> this.getFilters().removeIf(core -> core.match(toFind.getQueries(), compareBy.getValue()))));
+		Optional.ofNullable(toRemove).ifPresent(requestValues -> {
+			// ⚡ Acceso directo a filters sin ordenar
+			requestValues.forEach(
+					toFind -> this.filters.removeIf(core -> core.match(toFind.getQueries(), compareBy.getValue())));
+			this.markFiltersDirty();
+		});
 		return (T) this;
 	}
 
 	public <T extends Dto> T removeFilters() {
-		Optional.ofNullable(this.getFilters()).ifPresent(values -> this.getFilters().clear());
+		Optional.ofNullable(this.filters).ifPresent(values -> {
+			this.filters.clear();
+			this.markFiltersDirty();
+		});
 		return (T) this;
 	}
 
 	public List<String> filtersAsString() {
-		return Optional.ofNullable(this.getFilters()).stream().flatMap(Collection::stream).map(Queries::filtersAsString)
-				.sorted().toList();
+		// ⚡ Usa getFilters() que ya está optimizado con cache
+		return Optional.ofNullable(this.getFiltersSorted()).stream().flatMap(Collection::stream)
+				.map(Queries::filtersAsString).toList();
+	}
+
+	/**
+	 * Gets sorted filters with lazy sorting and caching. ⚡ Performance: Only sorts
+	 * when filters are modified (dirty flag).
+	 * 
+	 * @return sorted list of filters (cached)
+	 */
+	public List<Queries> getFiltersSorted() {
+		if (this.filtersDirty || this.sortedFiltersCache == null) {
+			// ⚡ Sort in-place usando Comparator estático
+			this.filters.sort(QUERIES_COMPARATOR);
+			this.sortedFiltersCache = this.filters;
+			this.filtersDirty = false;
+		}
+		return this.sortedFiltersCache;
+	}
+
+	public void setFilters(final List<Queries> filters) {
+		if (CollectionUtils.isNotEmpty(filters)) {
+			this.markFiltersDirty();
+			this.filters = filters;
+		}
 	}
 
 	public String filtersAsJson() {
@@ -140,10 +207,12 @@ public abstract class Dto {
 	}
 
 	public <T extends Dto> T parseFilters(final Collection<String> inputs) {
-		Optional.ofNullable(inputs).filter(strings -> !strings.isEmpty()).map(HashSet::new)
-				.ifPresent(strings -> this.setFilters(strings.stream().map(Query::parseQueries)
-						.filter(requestDynamicQuery -> !requestDynamicQuery.isEmpty()).map(Queries::new)
-						.collect(Collectors.toCollection(ArrayList::new))));
+		Optional.ofNullable(inputs).filter(strings -> !strings.isEmpty()).map(HashSet::new).ifPresent(strings -> {
+			this.setFilters(strings.stream().map(Query::parseQueries)
+					.filter(requestDynamicQuery -> !requestDynamicQuery.isEmpty()).map(Queries::new)
+					.collect(Collectors.toCollection(ArrayList::new)));
+			this.markFiltersDirty();
+		});
 		return (T) this;
 	}
 

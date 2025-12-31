@@ -13,8 +13,9 @@ import java.lang.annotation.Target;
  * 
  * <pre>
  * {@code
- * &#64;DslField(value = "name", javaName = "NAME", type = "String")
- * &#64;DslField(value = "age", javaName = "AGE", type = "int")
+ * &#64;DslField(value = "name", javaName = "NAME")
+ * &#64;DslField(value = "age", javaName = "AGE")
+ * &#64;DslField(value = "email", javaName = "EMAIL")
  * }
  * </pre>
  */
@@ -29,15 +30,10 @@ public @interface DslField {
 	String value();
 
 	/**
-	 * The Java constant name for the field. If not specified, value().toUpperCase()
-	 * will be used. Example: "NAME" -> Fields.NAME
+	 * The Java constant name for the field. Required. Example: "NAME" ->
+	 * Fields.NAME
 	 */
-	String javaName() default "";
-
-	/**
-	 * The type of the field (for type checking).
-	 */
-	String type() default "String";
+	String javaName();
 
 	/**
 	 * Description of the field (for documentation).

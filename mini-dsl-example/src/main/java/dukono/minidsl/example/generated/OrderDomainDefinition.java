@@ -16,10 +16,11 @@ import dukono.minidsl.annotation.OperationType;
  * without filtering (useful for projections)
  */
 @DslDomain(name = "Order", packageName = "dukono.minidsl.example.generated.order", dtoClass = "dukono.minidsl.example.dto.OrderDto", fields = {
-		@DslField(value = "orderId", type = "String"), @DslField(value = "customerName", type = "String"),
-		@DslField(value = "totalAmount", type = "BigDecimal"), @DslField(value = "status", type = "String"),
-		@DslField(value = "createdDate", type = "LocalDateTime"),
-		@DslField(value = "items", type = "List<String>")}, operations = {
+		@DslField(value = "orderId", javaName = "ORDER_ID"),
+		@DslField(value = "customerName", javaName = "CUSTOMER_NAME"),
+		@DslField(value = "totalAmount", javaName = "TOTAL_AMOUNT"), @DslField(value = "status", javaName = "STATUS"),
+		@DslField(value = "createdDate", javaName = "CREATED_DATE"),
+		@DslField(value = "items", javaName = "ITEMS")}, operations = {
 				// ========== WITH_ARG: Standard comparisons ==========
 
 				@DslOperation(name = "equalTo", operator = "eq", type = OperationType.WITH_ARG, description = "Matches exact value"),
