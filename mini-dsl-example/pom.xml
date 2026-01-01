@@ -27,6 +27,7 @@
             <groupId>dukono</groupId>
             <artifactId>mini-dsl-processor</artifactId>
             <scope>provided</scope>
+            <!-- IntelliJ will use the JAR from Maven local repository -->
         </dependency>
         
         <!-- Testing -->
@@ -49,20 +50,6 @@
     
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <!-- Enable annotation processing -->
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>dukono</groupId>
-                            <artifactId>mini-dsl-processor</artifactId>
-                            <version>${project.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
             
             <!-- Add generated sources to source path -->
             <plugin>

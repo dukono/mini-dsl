@@ -28,13 +28,6 @@
             <artifactId>javapoet</artifactId>
         </dependency>
         
-        <!-- Auto-Service for annotation processor registration -->
-        <dependency>
-            <groupId>com.google.auto.service</groupId>
-            <artifactId>auto-service</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        
         <!-- Guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -68,6 +61,28 @@
                     <!-- Disable annotation processing for the processor itself -->
                     <compilerArgument>-proc:none</compilerArgument>
                 </configuration>
+            </plugin>
+            
+            <!-- Generate META-INF/services file during process-resources phase -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-service-file</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.build.outputDirectory}/META-INF/services"/>
+                                <echo file="${project.build.outputDirectory}/META-INF/services/javax.annotation.processing.Processor">dukono.minidsl.processor.DslProcessor</echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

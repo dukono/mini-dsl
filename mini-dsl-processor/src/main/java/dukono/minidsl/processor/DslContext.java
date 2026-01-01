@@ -12,15 +12,15 @@ public class DslContext {
 	private final String packageName;
 	private final DslField[] fields;
 	private final DslOperation[] operations;
-	private final String dtoClass;
+	private final String dtoClassFullName;
 
 	public DslContext(final String domainName, final String packageName, final DslField[] fields,
-			final DslOperation[] operations, final String dtoClass) {
+			final DslOperation[] operations, final String dtoClassFullName) {
 		this.domainName = domainName;
 		this.packageName = packageName;
 		this.fields = fields;
 		this.operations = operations;
-		this.dtoClass = dtoClass;
+		this.dtoClassFullName = dtoClassFullName;
 	}
 
 	// Getters
@@ -42,6 +42,44 @@ public class DslContext {
 	}
 
 	public String getDtoClass() {
-		return this.dtoClass;
+		return this.dtoClassFullName;
+	}
+
+	// Helper methods for generators
+
+	public String getAnchorClassName() {
+		return this.domainName + "Anchor";
+	}
+
+	public String getFieldsClassName() {
+		return this.domainName + "Fields";
+	}
+
+	public String getAnchorOperationsClassName() {
+		return this.domainName + "AnchorOperations";
+	}
+
+	public String getOperationsClassName() {
+		return this.domainName + "Operations";
+	}
+
+	public String getApiClassName() {
+		return this.domainName + "Api";
+	}
+
+	public String getDtoPackageName() {
+		final int lastDot = this.dtoClassFullName.lastIndexOf('.');
+		if (lastDot > 0) {
+			return this.dtoClassFullName.substring(0, lastDot);
+		}
+		return "";
+	}
+
+	public String getDtoSimpleName() {
+		final int lastDot = this.dtoClassFullName.lastIndexOf('.');
+		if (lastDot > 0) {
+			return this.dtoClassFullName.substring(lastDot + 1);
+		}
+		return this.dtoClassFullName;
 	}
 }

@@ -36,13 +36,8 @@ public class ApiGenerator {
 	public void generate(final DslContext context, final Filer filer) throws IOException {
 		final String className = context.getApiClassName();
 
-		// Determine which anchor class to use based on configuration
-		final String anchorClass;
-		if (context.isWithActions()) {
-			anchorClass = context.getDomainName() + "AnchorActions";
-		} else {
-			anchorClass = context.getAnchorClassName();
-		}
+		// Always use AnchorActions (since all classes are generated)
+		final String anchorClass = context.getDomainName() + "AnchorActions";
 
 		final ClassName anchorClassName = ClassName.get(context.getPackageName(), anchorClass);
 		final ClassName dtoClassName = ClassName.get(context.getDtoPackageName(), context.getDtoSimpleName());
@@ -76,18 +71,17 @@ public class ApiGenerator {
 				.build();
 		classBuilder.addMethod(fromDtoMethod);
 
-		// from(Collection<String>) method - only for Actions
-		if (context.isWithActions()) {
-			final MethodSpec fromCollectionMethod = MethodSpec.methodBuilder("from")
-					.addModifiers(Modifier.PUBLIC, Modifier.STATIC).returns(anchorClassName)
-					.addParameter(ParameterizedTypeName.get(ClassName.get(java.util.Collection.class),
-							ClassName.get(String.class)), "queries")
-					.addStatement("return new $T(queries)", anchorClassName)
-					.addJavadoc("Creates a new DSL instance with predefined queries.\n").addJavadoc("\n")
-					.addJavadoc("@param queries the collection of queries to parse\n")
-					.addJavadoc("@return a new $L instance\n", anchorClass).build();
-			classBuilder.addMethod(fromCollectionMethod);
-		}
+		// from(Collection<String>) method - always generated since Actions is always
+		// included
+		final MethodSpec fromCollectionMethod = MethodSpec.methodBuilder("from")
+				.addModifiers(Modifier.PUBLIC, Modifier.STATIC).returns(anchorClassName)
+				.addParameter(ParameterizedTypeName.get(ClassName.get(java.util.Collection.class),
+						ClassName.get(String.class)), "queries")
+				.addStatement("return new $T(queries)", anchorClassName)
+				.addJavadoc("Creates a new DSL instance with predefined queries.\n").addJavadoc("\n")
+				.addJavadoc("@param queries the collection of queries to parse\n")
+				.addJavadoc("@return a new $L instance\n", anchorClass).build();
+		classBuilder.addMethod(fromCollectionMethod);
 
 		final TypeSpec typeSpec = classBuilder.build();
 

@@ -152,13 +152,18 @@ public @interface DslDomain {
 	 * @return the Enum class implementing OperationDefinition, or void.class if not
 	 *         used
 	 */
-	Class<?> operationsEnum() default void.class;
+	Class<? extends OperationDefinition> operationsEnum();
 
 	/**
-	 * The fully qualified name of the DTO class that this DSL will work with.
+	 * The DTO class that extends dukono.minidsl.Dto.
 	 * 
-	 * @return the DTO class name
+	 * If not specified (void.class), a DTO class will be generated automatically
+	 * following the naming pattern: {DomainName}Dto
+	 * 
+	 * Example: For domain "Order", generates "OrderDto"
+	 * 
+	 * @return the DTO class, or void.class to auto-generate
 	 */
-	String dtoClass();
+	Class<?> dtoClass() default void.class;
 
 }

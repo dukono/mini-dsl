@@ -1,15 +1,15 @@
 package dukono.minidsl.processor.generator;
 
-import java.io.IOException;
-
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import dukono.minidsl.processor.DslContext;
+
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Modifier;
+import java.io.IOException;
 
 /**
  * Generates the AnchorMain class for a DSL domain.
@@ -41,15 +41,9 @@ public class AnchorMainGenerator {
 		// Get DTO class name properly
 		final ClassName dtoClassName = ClassName.get(context.getDtoPackageName(), context.getDtoSimpleName());
 
-		// Determine base class based on configuration
-		final ClassName baseClass;
-		if (context.isWithActions()) {
-			baseClass = ClassName.get("dukono.minidsl", "AnchorHolderMainActions");
-		} else if (context.isWithLogical()) {
-			baseClass = ClassName.get("dukono.minidsl", "AnchorHolderMainLogical");
-		} else {
-			baseClass = ClassName.get("dukono.minidsl", "AnchorHolderMain");
-		}
+		// Use AnchorHolderMainActions as base class (always includes actions and
+		// logical)
+		final ClassName baseClass = ClassName.get("dukono.minidsl", "AnchorHolderMainActions");
 
 		final ClassName anchorClassName = ClassName.get(context.getPackageName(), className);
 
