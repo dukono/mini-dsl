@@ -1,24 +1,11 @@
 package dukono.minidsl.processor;
 
-import java.io.IOException;
-import java.util.Set;
-
 import com.sun.source.util.Trees;
 import dukono.minidsl.annotation.DslDomain;
 import dukono.minidsl.annotation.DslField;
 import dukono.minidsl.annotation.DslOperation;
-import dukono.minidsl.processor.generator.AnchorActionsGenerator;
-import dukono.minidsl.processor.generator.AnchorListGenerator;
-import dukono.minidsl.processor.generator.AnchorLogicalMainGenerator;
-import dukono.minidsl.processor.generator.AnchorMainGenerator;
-import dukono.minidsl.processor.generator.AnchorOneGenerator;
-import dukono.minidsl.processor.generator.AnchorOperationsGenerator;
-import dukono.minidsl.processor.generator.AnchorOperationsLogicalGenerator;
-import dukono.minidsl.processor.generator.AnchorOperationsOneGenerator;
 import dukono.minidsl.processor.generator.ApiGenerator;
-import dukono.minidsl.processor.generator.DtoGenerator;
-import dukono.minidsl.processor.generator.FieldsGenerator;
-import dukono.minidsl.processor.generator.OperationsGenerator;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -32,6 +19,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * Annotation processor for @DslDomain annotation.
@@ -114,84 +103,14 @@ public class DslProcessor extends AbstractProcessor {
 		// Create context
 		final DslContext context = new DslContext(domainName, packageName, fields, operations, dtoInfo.className);
 
-		// Generate DTO if needed (auto-generated, not user-defined)
-		if (dtoInfo.shouldGenerate) {
-			this.generateDto(context);
-		}
-
-		// Generate all classes (always)
-		this.generateFields(context);
-		this.generateOperations(context);
-		this.generateAnchorOperationsBase(context);
-		this.generateAnchorOperationsLogical(context);
-		this.generateAnchorOperationsOne(context);
-		this.generateAnchorOne(context);
-		this.generateAnchorList(context);
-		this.generateAnchorLogicalMain(context);
-		this.generateAnchorMain(context);
-		this.generateAnchorActions(context);
+		// Generate only the Api class which contains all nested classes
 		this.generateApi(context);
 
 		this.messager.printMessage(Diagnostic.Kind.NOTE, "Successfully generated DSL classes for: " + domainName);
 	}
 
-	private void generateDto(final DslContext context) throws IOException {
-		final DtoGenerator generator = new DtoGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateFields(final DslContext context) throws IOException {
-		final FieldsGenerator generator = new FieldsGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateOperations(final DslContext context) throws IOException {
-		final OperationsGenerator generator = new OperationsGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateAnchorOperationsBase(final DslContext context) throws IOException {
-		final AnchorOperationsGenerator generator = new AnchorOperationsGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateAnchorMain(final DslContext context) throws IOException {
-		final AnchorMainGenerator generator = new AnchorMainGenerator();
-		generator.generate(context, this.filer);
-	}
-
 	private void generateApi(final DslContext context) throws IOException {
 		final ApiGenerator generator = new ApiGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateAnchorOperationsLogical(final DslContext context) throws IOException {
-		final AnchorOperationsLogicalGenerator generator = new AnchorOperationsLogicalGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateAnchorOperationsOne(final DslContext context) throws IOException {
-		final AnchorOperationsOneGenerator generator = new AnchorOperationsOneGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateAnchorOne(final DslContext context) throws IOException {
-		final AnchorOneGenerator generator = new AnchorOneGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateAnchorList(final DslContext context) throws IOException {
-		final AnchorListGenerator generator = new AnchorListGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateAnchorLogicalMain(final DslContext context) throws IOException {
-		final AnchorLogicalMainGenerator generator = new AnchorLogicalMainGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateAnchorActions(final DslContext context) throws IOException {
-		final AnchorActionsGenerator generator = new AnchorActionsGenerator();
 		generator.generate(context, this.filer);
 	}
 
