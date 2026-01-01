@@ -1,12 +1,12 @@
 package dukono.minidsl.example;
 
-import java.util.List;
-import java.util.function.UnaryOperator;
-
 import com.google.common.reflect.TypeToken;
 import dukono.minidsl.AnchorHolderMainLogical;
 import dukono.minidsl.DtoString;
 import dukono.minidsl.Query;
+
+import java.util.List;
+import java.util.function.UnaryOperator;
 // @formatter:off
 public class AnchorLogicalMain extends
 			AnchorHolderMainLogical<Fields, DtoString, AnchorLogicalMain, AnchorOperationsLogical<AnchorLogicalMain>> {
@@ -17,7 +17,6 @@ public class AnchorLogicalMain extends
 		}, new TypeToken<AnchorOperationsLogical<AnchorLogicalMain>>() {
 		}, new Fields());
 	}
-
 	public <L> AnchorLogicalMain listCollapseAnd(final List<L> list, final UnaryOperator<AnchorOne<L>> a) {
 		return super.collapse(list, a, Query.AND);
 	}
