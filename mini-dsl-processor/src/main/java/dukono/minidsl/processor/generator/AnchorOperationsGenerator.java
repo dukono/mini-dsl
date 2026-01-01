@@ -1,8 +1,5 @@
 package dukono.minidsl.processor.generator;
 
-import java.io.IOException;
-import java.util.Collection;
-
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -12,8 +9,11 @@ import com.squareup.javapoet.TypeVariableName;
 import com.squareup.javapoet.WildcardTypeName;
 import dukono.minidsl.annotation.DslOperation;
 import dukono.minidsl.processor.DslContext;
+
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.Modifier;
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Generates the AnchorOperationsBase class for a DSL domain.
@@ -24,7 +24,7 @@ import javax.lang.model.element.Modifier;
  * public class VehicleAnchorOperations<H extends AnchorHolderMain<?, ?, H, ?>> extends AnchorOperationsBasic<H> {
  * 
  * 	public H equalTo(Object arg) {
- * 		return this.create(Query.from(this.getName(), VehicleOperations.EQ, arg));
+ * 		return this.create(Query.from(this.getName(), "eq", arg));
  * 	}
  * }
  * </pre>
@@ -33,7 +33,6 @@ public class AnchorOperationsGenerator {
 
 	public void generate(final DslContext context, final Filer filer) throws IOException {
 		final String className = context.getAnchorOperationsClassName();
-		final String operationsClass = context.getOperationsClassName();
 
 		// Type variable H
 		final TypeVariableName h = TypeVariableName.get("H",
@@ -51,7 +50,7 @@ public class AnchorOperationsGenerator {
 
 		// Add method for each operation
 		for (final DslOperation operation : context.getOperations()) {
-			final MethodSpec method = this.generateOperationMethod(operation, operationsClass, h);
+			final MethodSpec method = this.generateOperationMethod(operation, h);
 			classBuilder.addMethod(method);
 		}
 
@@ -64,10 +63,8 @@ public class AnchorOperationsGenerator {
 		javaFile.writeTo(filer);
 	}
 
-	private MethodSpec generateOperationMethod(final DslOperation operation, final String operationsClass,
-			final TypeVariableName h) {
+	private MethodSpec generateOperationMethod(final DslOperation operation, final TypeVariableName h) {
 		final String methodName = operation.name();
-		final String constantName = this.toConstantName(operation.operator());
 
 		final MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC)
 				.returns(TypeVariableName.get("H"));
@@ -81,8 +78,8 @@ public class AnchorOperationsGenerator {
 				// Operation with pattern: getName + operation + arg
 				// Example: equalTo(Object arg)
 				methodBuilder.addParameter(Object.class, "arg");
-				methodBuilder.addStatement("return this.create($T.from(this.getName(), $L.$L, arg))",
-						ClassName.get("dukono.minidsl", "Query"), operationsClass, constantName);
+				methodBuilder.addStatement("return this.create($T.from(this.getName(), $S, arg))",
+						ClassName.get("dukono.minidsl", "Query"), operation.operator());
 				break;
 
 			case WITH_LIST :
@@ -90,16 +87,15 @@ public class AnchorOperationsGenerator {
 				// Example: inValues(Collection<Object> arg)
 				methodBuilder.addParameter(
 						ParameterizedTypeName.get(ClassName.get(Collection.class), ClassName.get(Object.class)), "arg");
-				methodBuilder.addStatement(
-						"return this.create($T.from(this.getName(), $L.$L, this.listFormatting(arg)))",
-						ClassName.get("dukono.minidsl", "Query"), operationsClass, constantName);
+				methodBuilder.addStatement("return this.create($T.from(this.getName(), $S, this.listFormatting(arg)))",
+						ClassName.get("dukono.minidsl", "Query"), operation.operator());
 				break;
 
 			case WITH_EMPTY :
 				// Operation with pattern: getName + operation + empty
 				// Example: isNotNull()
-				methodBuilder.addStatement("return this.create($T.from(this.getName(), $L.$L, $T.empty()))",
-						ClassName.get("dukono.minidsl", "Query"), operationsClass, constantName,
+				methodBuilder.addStatement("return this.create($T.from(this.getName(), $S, $T.empty()))",
+						ClassName.get("dukono.minidsl", "Query"), operation.operator(),
 						ClassName.get("java.util", "Optional"));
 				break;
 
@@ -112,9 +108,5 @@ public class AnchorOperationsGenerator {
 		}
 
 		return methodBuilder.build();
-	}
-
-	private String toConstantName(final String operator) {
-		return operator.toUpperCase().replace('-', '_');
 	}
 }

@@ -57,14 +57,102 @@ public @interface DslDomain {
 	 * 
 	 * @return array of field definitions
 	 */
-	DslField[] fields();
+	DslField[] fields() default {};
+
+	/**
+	 * The Enum class that defines the fields of the domain. Alternative to using
+	 * fields() array. The enum constant names will be used as javaName, and their
+	 * values (via implementing an interface with getValue()) will be used as field
+	 * values.
+	 * 
+	 * Example:
+	 * 
+	 * <pre>
+	 * public enum OrderFields {
+	 * 	ORDER_ID("orderId"), CUSTOMER_NAME("customerName"), TOTAL_AMOUNT("totalAmount");
+	 * 
+	 * 	private final String value;
+	 * 
+	 * 	OrderFields(String value) {
+	 * 		this.value = value;
+	 * 	}
+	 * 
+	 * 	public String getValue() {
+	 * 		return value;
+	 * 	}
+	 * }
+	 * </pre>
+	 * 
+	 * @return the Enum class defining fields, or void.class if not used
+	 */
+	Class<?> fieldsEnum() default void.class;
+
+	/**
+	 * A class with public static final String constants that define the fields of
+	 * the domain. Alternative to using fields() array or fieldsEnum().
+	 * 
+	 * Example:
+	 * 
+	 * <pre>
+	 * public class OrderFieldConstants {
+	 * 	public static final String ORDER_ID = "orderId";
+	 * 	public static final String CUSTOMER_NAME = "customerName";
+	 * 	public static final String TOTAL_AMOUNT = "totalAmount";
+	 * }
+	 * </pre>
+	 * 
+	 * @return the class containing field constants, or void.class if not used
+	 */
+	Class<?> fieldsConstants() default void.class;
 
 	/**
 	 * The operations available for the domain.
 	 * 
 	 * @return array of operation definitions
 	 */
-	DslOperation[] operations();
+	DslOperation[] operations() default {};
+
+	/**
+	 * An Enum class that implements OperationDefinition interface to define
+	 * operations. Alternative to using operations() array.
+	 * 
+	 * The enum must implement OperationDefinition interface and provide getName(),
+	 * getOperator(), and getType() methods.
+	 * 
+	 * Example:
+	 * 
+	 * <pre>
+	 * public enum OrderOperations implements OperationDefinition {
+	 * 	EQUAL_TO("equalTo", "eq", OperationType.WITH_ARG), NOT_EQUAL_TO("notEqualTo", "ne", OperationType.WITH_ARG);
+	 * 
+	 * 	private final String name;
+	 * 	private final String operator;
+	 * 	private final OperationType type;
+	 * 
+	 * 	OrderOperations(String name, String operator, OperationType type) {
+	 * 		this.name = name;
+	 * 		this.operator = operator;
+	 * 		this.type = type;
+	 * 	}
+	 * 
+	 * 	public String getName() {
+	 * 		return name;
+	 * 	}
+	 * 
+	 * 	public String getOperator() {
+	 * 		return operator;
+	 * 	}
+	 * 
+	 * 	public OperationType getType() {
+	 * 		return type;
+	 * 	}
+	 * }
+	 * </pre>
+	 * 
+	 * @return the Enum class implementing OperationDefinition, or void.class if not
+	 *         used
+	 */
+	Class<?> operationsEnum() default void.class;
 
 	/**
 	 * The fully qualified name of the DTO class that this DSL will work with.
@@ -73,31 +161,4 @@ public @interface DslDomain {
 	 */
 	String dtoClass();
 
-	/**
-	 * Whether to generate logical operations (AND, OR, NOT).
-	 * 
-	 * @return true to include logical operations
-	 */
-	boolean withLogical() default true;
-
-	/**
-	 * Whether to generate action operations (add, remove, etc).
-	 * 
-	 * @return true to include action operations
-	 */
-	boolean withActions() default true;
-
-	/**
-	 * Whether to generate list operations.
-	 * 
-	 * @return true to include list operations
-	 */
-	boolean withList() default true;
-
-	/**
-	 * Whether to generate the high-level Api class.
-	 * 
-	 * @return true to generate Api class
-	 */
-	boolean generateApi() default true;
 }

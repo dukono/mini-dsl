@@ -2,6 +2,7 @@ package dukono.minidsl.example;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -17,18 +18,15 @@ import dukono.minidsl.RemoveBy.Remover;
 // @formatter:off
 public class AnchorActions extends
 			AnchorHolderMainActions<Fields, DtoString, AnchorActions, AnchorOperationsLogical<AnchorActions>> {
-	// @formatter:on
+	
 	public AnchorActions() {
-		super(new TypeToken<DtoString>() {
-		}, new TypeToken<AnchorList<?>>() {
-		}, new TypeToken<AnchorActions>() {
-		}, new TypeToken<AnchorOperationsLogical<AnchorActions>>() {
-		}, new Fields());
+		super(new TypeToken<DtoString>() {}, new TypeToken<AnchorList<?>>() {}, new TypeToken<AnchorOperationsLogical<AnchorActions>>() {},
+				new Fields());
 	}
-
+	// @formatter:on
 	public AnchorActions(final DtoString dto) {
 		this();
-		this.dto = dto;
+		this.dtoClazzInstance = Optional.ofNullable(dto);
 	}
 
 	public AnchorActions(final Collection<String> dtoData) {

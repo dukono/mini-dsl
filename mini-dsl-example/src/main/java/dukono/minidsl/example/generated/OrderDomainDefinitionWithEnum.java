@@ -1,25 +1,24 @@
 package dukono.minidsl.example.generated;
 
 /**
- * Example showing all 4 operation types in action.
+ * Alternative version using fieldsEnum instead of fields array.
  * 
- * This example demonstrates real-world scenarios for each operation type:
+ * This is much more concise and easier to maintain than the array-based
+ * approach.
  * 
- * 1. WITH_ARG - Standard comparisons (equal, greater, less, like, etc.) 2.
- * WITH_LIST - Membership checks (in, not in) 3. WITH_EMPTY - Null checks and
- * boolean flags (isNull, isNotNull, isActive) 4. JUST_ADD - Include field
- * without filtering (useful for projections)
+ * Compare: - OLD: @DslField(value = "orderId", javaName = "ORDER_ID") - NEW:
+ * Just define OrderFields enum with: ORDER_ID("orderId")
  */
 // @DslDomain(name = "Order", packageName =
 // "dukono.minidsl.example.generated.order", dtoClass =
-// "dukono.minidsl.example.dto.OrderDto", withActions = true, withLogical =
-// true, withList = true, fields = {
-// @DslField(value = "orderId", javaName = "ORDER_ID"),
-// @DslField(value = "customerName", javaName = "CUSTOMER_NAME"),
-// @DslField(value = "totalAmount", javaName = "TOTAL_AMOUNT"), @DslField(value
-// = "status", javaName = "STATUS"),
-// @DslField(value = "createdDate", javaName = "CREATED_DATE"),
-// @DslField(value = "items", javaName = "ITEMS")}, operations = {
+// "dukono.minidsl.example.dto.OrderDto", fieldsEnum = OrderFields.class, // <--
+// // Using
+// // Enum
+// // instead
+// // of
+// // fields
+// // array
+// withActions = true, withLogical = true, withList = true, operations = {
 // // ========== WITH_ARG: Standard comparisons ==========
 //
 // @DslOperation(name = "equalTo", operator = "eq", type =
@@ -38,8 +37,8 @@ package dukono.minidsl.example.generated;
 // to the given value"),
 //
 // @DslOperation(name = "lessThan", operator = "lt", type =
-// OperationType.WITH_ARG, description = "Matches values less than the given
-// value"),
+// OperationType.WITH_ARG, description = "Matches values less than or equal to
+// the given value"),
 //
 // @DslOperation(name = "lessThanOrEqual", operator = "lte", type =
 // OperationType.WITH_ARG, description = "Matches values less than or equal to
@@ -96,33 +95,25 @@ package dukono.minidsl.example.generated;
 //
 // @DslOperation(name = "select", type = OperationType.JUST_ADD, description =
 // "Selects the field for projection")}, generateApi = true)
-public class OrderDomainDefinition {
+public class OrderDomainDefinitionWithEnum {
 	// This class only holds the annotation
 	// All implementation is generated at compile-time
 
 	/**
-	 * USAGE EXAMPLES:
+	 * BENEFITS OF USING ENUM:
 	 * 
-	 * // Example 1: Find high-value orders OrderApi.from() .field(f ->
-	 * f.TOTAL_AMOUNT).greaterThan(new BigDecimal("1000.00")) .and() .field(f ->
-	 * f.STATUS).inValues(List.of("PENDING", "PROCESSING")) .getDto();
+	 * 1. More concise - Just one line per field instead of full annotation 2.
+	 * Type-safe - Enum provides compile-time safety 3. Easier to maintain -
+	 * Refactoring is simpler 4. Less verbose - Compare 6 lines of @DslField vs 1
+	 * line in enum 5. Reusable - The enum can be used in other places if needed
 	 * 
-	 * // Example 2: Find orders with null customer OrderApi.from() .field(f ->
-	 * f.CUSTOMER_NAME).isNull() .or() .field(f -> f.CUSTOMER_NAME).isEmpty()
-	 * .getDto();
+	 * OLD WAY (verbose): fields = { @DslField(value = "orderId", javaName =
+	 * "ORDER_ID"), @DslField(value = "customerName", javaName = "CUSTOMER_NAME"),
+	 * ... }
 	 * 
-	 * // Example 3: Search by customer name pattern OrderApi.from() .field(f ->
-	 * f.CUSTOMER_NAME).like("%John%") .and() .field(f ->
-	 * f.STATUS).notEqualTo("CANCELLED") .getDto();
+	 * NEW WAY (concise): fieldsEnum = OrderFields.class
 	 * 
-	 * // Example 4: Select specific fields (projection) OrderApi.from() .field(f ->
-	 * f.ORDER_ID).include() .and() .field(f -> f.TOTAL_AMOUNT).include() .and()
-	 * .field(f -> f.STATUS).equalTo("COMPLETED") .getDto();
-	 * 
-	 * // Example 5: Complex query with all operation types OrderApi.from() .field(f
-	 * -> f.TOTAL_AMOUNT).greaterThanOrEqual(new BigDecimal("100.00")) // WITH_ARG
-	 * .and() .field(f -> f.STATUS).inValues(List.of("PENDING", "PROCESSING")) //
-	 * WITH_LIST .and() .field(f -> f.CUSTOMER_NAME).isNotNull() // WITH_EMPTY
-	 * .and() .field(f -> f.ORDER_ID).select() // JUST_ADD .getDto();
+	 * And in OrderFields.java: ORDER_ID("orderId"), CUSTOMER_NAME("customerName"),
+	 * ...
 	 */
 }

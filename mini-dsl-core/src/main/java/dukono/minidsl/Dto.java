@@ -29,7 +29,7 @@ public abstract class Dto {
 	private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
 	// ⚡ Comparator reutilizable - evita crear instancias en cada sort
-	private static final java.util.Comparator<Queries> QUERIES_COMPARATOR = Queries::compareTo;
+	public static final java.util.Comparator<Queries> QUERIES_COMPARATOR = Queries::compareTo;
 
 	@Default
 	private List<Queries> filters = new ArrayList<>();
@@ -49,6 +49,14 @@ public abstract class Dto {
 
 	public <T extends Dto> T addFilter(final Queries filter) {
 		Optional.ofNullable(filter).filter(Queries::notEmpty).ifPresent(s -> {
+			this.filters.add(s);
+			this.markFiltersDirty();
+		});
+		return (T) this;
+	}
+	public <T extends Dto> T resetFilter(final Queries filter) {
+		Optional.ofNullable(filter).filter(Queries::notEmpty).ifPresent(s -> {
+			this.filters.clear();
 			this.filters.add(s);
 			this.markFiltersDirty();
 		});
@@ -218,7 +226,6 @@ public abstract class Dto {
 
 	<T extends Dto> void update(final T val) {
 		this.addFilter(val.getFilters());
-
 	}
 
 }

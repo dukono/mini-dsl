@@ -43,13 +43,10 @@ public class AnchorLogicalMainGenerator {
 
 		// Constructor
 		final MethodSpec constructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
-				.addStatement(
-						"super(new $T<$T>() {}, new $T<$T<?>>() {}, new $T<$T>() {}, new $T<$L<$T>>() {}, new $T())",
+				.addStatement("super(new $T<$T>() {}, new $T<$T<?>>() {}, new $T<$L<$T>>() {}, new $T())",
 						ClassName.get("com.google.common.reflect", "TypeToken"), ClassName.bestGuess(dtoClassName),
 						ClassName.get("com.google.common.reflect", "TypeToken"),
 						ClassName.get(context.getPackageName(), anchorListClassName),
-						ClassName.get("com.google.common.reflect", "TypeToken"),
-						ClassName.get(context.getPackageName(), className),
 						ClassName.get("com.google.common.reflect", "TypeToken"), operationsLogicalClassName,
 						ClassName.get(context.getPackageName(), className),
 						ClassName.get(context.getPackageName(), fieldsClassName))

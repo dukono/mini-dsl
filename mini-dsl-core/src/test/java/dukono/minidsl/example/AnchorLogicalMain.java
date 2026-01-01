@@ -14,7 +14,6 @@ public class AnchorLogicalMain extends
 	public AnchorLogicalMain() {
 		super(new TypeToken<DtoString>() {
 		}, new TypeToken<AnchorList<?>>() {
-		}, new TypeToken<AnchorLogicalMain>() {
 		}, new TypeToken<AnchorOperationsLogical<AnchorLogicalMain>>() {
 		}, new Fields());
 	}

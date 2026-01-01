@@ -24,9 +24,9 @@ public abstract class AnchorHolderMainLogical<
 		super();
 	}
 
-	protected AnchorHolderMainLogical(final TypeToken<S> ob, final TypeToken<?> listClazz, final TypeToken<X> self,
-			final TypeToken<W> opClazz, final F fields) {
-		super(ob, listClazz, self, opClazz, fields);
+	protected AnchorHolderMainLogical(final TypeToken<S> ob, final TypeToken<?> listClazz, final TypeToken<W> opClazz,
+			final F fields) {
+		super(ob, listClazz, opClazz, fields);
 	}
 
 	public X and() {
@@ -58,7 +58,6 @@ public abstract class AnchorHolderMainLogical<
 	public X collapseOr() {
 		return this.collapse(Query.OR);
 	}
-
 	public X collapse() {
 		return this.collapse(null);
 	}
@@ -83,8 +82,8 @@ public abstract class AnchorHolderMainLogical<
     // @formatter:on
 		final T holder = this.newList();
 		holder.setList(list);
-		final S dtoBuilt = holder.addForEach(a).getDto();
-		return this.addDto(dtoBuilt);
+		this.getDto().addFilter(holder.addForEach(a));
+		return (X) this;
 	}
 
 	// @formatter:off
@@ -98,12 +97,12 @@ public abstract class AnchorHolderMainLogical<
 		newlist.setList(List.of());
 		final Queries collapse;
 		if (val == null) {
-			collapse = newlist.collapse(this.getDto());
+			collapse = newlist.collapse(this.getDto().getFilters());
 		} else {
-			collapse = newlist.collapse(this.getDto(), val);
+			collapse = newlist.collapse(this.getDto().getFilters(), val);
 		}
 
-		this.getDto().removeFilters().addFilter(collapse);
+		this.getDto().resetFilter(collapse);
 		return (X) this;
 	}
 

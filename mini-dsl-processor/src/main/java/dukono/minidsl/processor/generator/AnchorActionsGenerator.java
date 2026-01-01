@@ -29,7 +29,7 @@ public class AnchorActionsGenerator {
 		final String operationsLogicalClassName = context.getDomainName() + "AnchorOperationsLogical";
 		final String anchorOneClassName = context.getDomainName() + "AnchorOne";
 		final String anchorListClassName = context.getDomainName() + "AnchorList";
-		final String anchorMainClassName = context.getDomainName() + "AnchorMain";
+		final String anchorClassName = context.getAnchorClassName(); // Use the correct anchor class name
 		final String anchorLogicalMainClassName = context.getDomainName() + "AnchorLogicalMain";
 		final String dtoClassName = context.getDtoClass();
 
@@ -47,13 +47,10 @@ public class AnchorActionsGenerator {
 
 		// Default constructor
 		final MethodSpec constructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
-				.addStatement(
-						"super(new $T<$T>() {}, new $T<$T<?>>() {}, new $T<$T>() {}, new $T<$L<$T>>() {}, new $T())",
+				.addStatement("super(new $T<$T>() {}, new $T<$T<?>>() {}, new $T<$L<$T>>() {}, new $T())",
 						ClassName.get("com.google.common.reflect", "TypeToken"), ClassName.bestGuess(dtoClassName),
 						ClassName.get("com.google.common.reflect", "TypeToken"),
 						ClassName.get(context.getPackageName(), anchorListClassName),
-						ClassName.get("com.google.common.reflect", "TypeToken"),
-						ClassName.get(context.getPackageName(), className),
 						ClassName.get("com.google.common.reflect", "TypeToken"), operationsLogicalClassName,
 						ClassName.get(context.getPackageName(), className),
 						ClassName.get(context.getPackageName(), fieldsClassName))
@@ -62,7 +59,7 @@ public class AnchorActionsGenerator {
 		// Constructor with DTO
 		final MethodSpec constructorWithDto = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
 				.addParameter(ClassName.bestGuess(dtoClassName), "dto").addStatement("this()")
-				.addStatement("this.dto = dto").build();
+				.addStatement("this.dtoClazzInstance = java.util.Optional.ofNullable(dto)").build();
 
 		// Constructor with collection
 		final MethodSpec constructorWithCollection = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
@@ -130,12 +127,12 @@ public class AnchorActionsGenerator {
 				.returns(ClassName.get(context.getPackageName(), className))
 				.addParameter(ParameterizedTypeName.get(ClassName.get(Function.class),
 						ParameterizedTypeName.get(ClassName.get("dukono.minidsl", "RemoveBy"),
-								ClassName.get(context.getPackageName(), anchorMainClassName),
+								ClassName.get(context.getPackageName(), anchorClassName),
 								ClassName.get(context.getPackageName(), anchorLogicalMainClassName)),
 						ClassName.get("dukono.minidsl", "RemoveBy", "Remover")), "removeFunction")
 				.addStatement("return super.remove(removeFunction, new $T<$T>() {}, new $T<$T>() {})",
 						ClassName.get("com.google.common.reflect", "TypeToken"),
-						ClassName.get(context.getPackageName(), anchorMainClassName),
+						ClassName.get(context.getPackageName(), anchorClassName),
 						ClassName.get("com.google.common.reflect", "TypeToken"),
 						ClassName.get(context.getPackageName(), anchorLogicalMainClassName))
 				.build();

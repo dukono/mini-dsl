@@ -5,6 +5,8 @@ import java.util.Set;
 
 import com.google.auto.service.AutoService;
 import dukono.minidsl.annotation.DslDomain;
+import dukono.minidsl.annotation.DslField;
+import dukono.minidsl.annotation.DslOperation;
 import dukono.minidsl.processor.generator.AnchorActionsGenerator;
 import dukono.minidsl.processor.generator.AnchorListGenerator;
 import dukono.minidsl.processor.generator.AnchorLogicalMainGenerator;
@@ -15,7 +17,6 @@ import dukono.minidsl.processor.generator.AnchorOperationsLogicalGenerator;
 import dukono.minidsl.processor.generator.AnchorOperationsOneGenerator;
 import dukono.minidsl.processor.generator.ApiGenerator;
 import dukono.minidsl.processor.generator.FieldsGenerator;
-import dukono.minidsl.processor.generator.OperationsGenerator;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -32,8 +33,8 @@ import javax.tools.Diagnostic;
 /**
  * Annotation processor for @DslDomain annotation.
  * 
- * Generates all necessary classes for a DSL domain: - Fields class - Operations
- * class - AnchorOperationsBase class - AnchorMain class - Api class
+ * Generates all necessary classes for a DSL domain: - Fields class -
+ * AnchorOperationsBase class - AnchorMain class - Api class
  */
 @AutoService(Processor.class)
 @SupportedAnnotationTypes("dukono.minidsl.annotation.DslDomain")
@@ -69,58 +70,43 @@ public class DslProcessor extends AbstractProcessor {
 		// Extract information
 		final String domainName = annotation.name();
 		String packageName = annotation.packageName();
+
+		// If packageName is not specified, infer it from fieldsConstants, fieldsEnum,
+		// or the annotated class
 		if (packageName.isEmpty()) {
-			packageName = this.processingEnv.getElementUtils().getPackageOf(element).getQualifiedName().toString();
+			packageName = this.inferPackageName(annotation, element);
 		}
 
 		this.messager.printMessage(Diagnostic.Kind.NOTE,
 				"Generating DSL classes for domain: " + domainName + " in package: " + packageName);
 
+		// Extract fields using FieldsExtractor (validates and extracts)
+		final DslField[] fields = new FieldsExtractor(this.processingEnv).extractFields(annotation, element);
+
+		// Extract operations using OperationsExtractor (validates and extracts)
+		final DslOperation[] operations = new OperationsExtractor(this.processingEnv).extractOperations(annotation,
+				element);
+
 		// Create context
-		final DslContext context = new DslContext(domainName, packageName, annotation.fields(), annotation.operations(),
-				annotation.dtoClass(), annotation.withLogical(), annotation.withActions(), annotation.withList(),
-				annotation.generateApi());
+		final DslContext context = new DslContext(domainName, packageName, fields, operations, annotation.dtoClass());
 
-		// Generate classes
+		// Generate all classes (always)
 		this.generateFields(context);
-		this.generateOperations(context);
 		this.generateAnchorOperationsBase(context);
-
-		// Generate logical operations if enabled
-		if (annotation.withLogical()) {
-			this.generateAnchorOperationsLogical(context);
-		}
-
-		// Generate list-related classes if enabled
-		if (annotation.withList()) {
-			this.generateAnchorOperationsOne(context);
-			this.generateAnchorOne(context);
-			this.generateAnchorList(context);
-			this.generateAnchorLogicalMain(context);
-		}
-
-		// Generate main anchor
+		this.generateAnchorOperationsLogical(context);
+		this.generateAnchorOperationsOne(context);
+		this.generateAnchorOne(context);
+		this.generateAnchorList(context);
+		this.generateAnchorLogicalMain(context);
 		this.generateAnchorMain(context);
-
-		// Generate actions if enabled
-		if (annotation.withActions()) {
-			this.generateAnchorActions(context);
-		}
-
-		if (annotation.generateApi()) {
-			this.generateApi(context);
-		}
+		this.generateAnchorActions(context);
+		this.generateApi(context);
 
 		this.messager.printMessage(Diagnostic.Kind.NOTE, "Successfully generated DSL classes for: " + domainName);
 	}
 
 	private void generateFields(final DslContext context) throws IOException {
 		final FieldsGenerator generator = new FieldsGenerator();
-		generator.generate(context, this.filer);
-	}
-
-	private void generateOperations(final DslContext context) throws IOException {
-		final OperationsGenerator generator = new OperationsGenerator();
 		generator.generate(context, this.filer);
 	}
 
@@ -168,4 +154,78 @@ public class DslProcessor extends AbstractProcessor {
 		final AnchorActionsGenerator generator = new AnchorActionsGenerator();
 		generator.generate(context, this.filer);
 	}
+
+	/**
+	 * Infers the package name when not specified in @DslDomain. Priority: 1.
+	 * fieldsConstants package 2. fieldsEnum package 3. Annotated class package
+	 */
+	private String inferPackageName(final DslDomain annotation, final Element element) {
+		// Priority 1: Try to get package from fieldsConstants
+		final String constantsPackage = this.getPackageFromFieldsConstants(annotation);
+		if (constantsPackage != null) {
+			this.messager.printMessage(Diagnostic.Kind.NOTE,
+					"Inferred package from fieldsConstants: " + constantsPackage);
+			return constantsPackage;
+		}
+
+		// Priority 2: Try to get package from fieldsEnum
+		final String enumPackage = this.getPackageFromFieldsEnum(annotation);
+		if (enumPackage != null) {
+			this.messager.printMessage(Diagnostic.Kind.NOTE, "Inferred package from fieldsEnum: " + enumPackage);
+			return enumPackage;
+		}
+
+		// Priority 3: Use annotated class package (default behavior)
+		final String classPackage = this.processingEnv.getElementUtils().getPackageOf(element).getQualifiedName()
+				.toString();
+		this.messager.printMessage(Diagnostic.Kind.NOTE, "Using annotated class package: " + classPackage);
+		return classPackage;
+	}
+
+	/**
+	 * Gets the package name from fieldsConstants if specified.
+	 */
+	private String getPackageFromFieldsConstants(final DslDomain annotation) {
+		try {
+			annotation.fieldsConstants();
+			return null; // void.class
+		} catch (final javax.lang.model.type.MirroredTypeException mte) {
+			final javax.lang.model.type.TypeMirror typeMirror = mte.getTypeMirror();
+			final String typeName = typeMirror.toString();
+			if (!typeName.equals("void") && !typeName.equals("java.lang.Void")) {
+				return this.extractPackageFromQualifiedName(typeName);
+			}
+			return null;
+		}
+	}
+
+	/**
+	 * Gets the package name from fieldsEnum if specified.
+	 */
+	private String getPackageFromFieldsEnum(final DslDomain annotation) {
+		try {
+			annotation.fieldsEnum();
+			return null; // void.class
+		} catch (final javax.lang.model.type.MirroredTypeException mte) {
+			final javax.lang.model.type.TypeMirror typeMirror = mte.getTypeMirror();
+			final String typeName = typeMirror.toString();
+			if (!typeName.equals("void") && !typeName.equals("java.lang.Void")) {
+				return this.extractPackageFromQualifiedName(typeName);
+			}
+			return null;
+		}
+	}
+
+	/**
+	 * Extracts package name from a fully qualified class name. Example:
+	 * "com.example.MyClass" -> "com.example"
+	 */
+	private String extractPackageFromQualifiedName(final String qualifiedName) {
+		final int lastDot = qualifiedName.lastIndexOf('.');
+		if (lastDot > 0) {
+			return qualifiedName.substring(0, lastDot);
+		}
+		return ""; // Default package
+	}
+
 }

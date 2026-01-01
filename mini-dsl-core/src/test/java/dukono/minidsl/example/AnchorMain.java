@@ -7,10 +7,9 @@ import dukono.minidsl.DtoString;
 public class AnchorMain extends AnchorHolderMain<Fields, DtoString, AnchorMain, AnchorOperationsBase<AnchorMain>> {
 
 	public AnchorMain() {
-		super(new TypeToken<DtoString>() {
+		super(new TypeToken<>() {
 		}, new TypeToken<AnchorList<?>>() {
-		}, new TypeToken<AnchorMain>() {
-		}, new TypeToken<AnchorOperationsBase<AnchorMain>>() {
+		}, new TypeToken<>() {
 		}, new Fields());
 	}
 

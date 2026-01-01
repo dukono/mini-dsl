@@ -28,9 +28,9 @@ public abstract class AnchorHolderMainActions<
 		super();
 	}
 
-	protected AnchorHolderMainActions(final TypeToken<S> ob, final TypeToken<?> listClazz, final TypeToken<X> self,
-			final TypeToken<W> opClazz, final F fields) {
-		super(ob, listClazz, self, opClazz, fields);
+	protected AnchorHolderMainActions(final TypeToken<S> ob, final TypeToken<?> listClazz, final TypeToken<W> opClazz,
+			final F fields) {
+		super(ob, listClazz, opClazz, fields);
 	}
 
 	protected <Y extends AnchorHolderMain<F, S, Y, ?>> X replace(final UnaryOperator<Y> find,

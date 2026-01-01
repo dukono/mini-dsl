@@ -33,11 +33,7 @@ public abstract class AnchorHolderMain<
 
 	protected Queries queries;
 
-	protected S dto;
-
 	protected TypeToken<S> dtoClazz;
-
-	protected TypeToken<X> self;
 
 	protected TypeToken<?> listClazz;
 
@@ -45,11 +41,13 @@ public abstract class AnchorHolderMain<
 
 	protected F fields;
 
-	protected AnchorHolderMain(final TypeToken<S> ob, final TypeToken<?> listClazz, final TypeToken<X> self,
-			final TypeToken<W> opClazz, final F fields) {
+	protected Optional<S> dtoClazzInstance = Optional.empty();
+	protected Optional<W> opClazzInstance = Optional.empty();
+
+	protected AnchorHolderMain(final TypeToken<S> ob, final TypeToken<?> listClazz, final TypeToken<W> opClazz,
+			final F fields) {
 		this.dtoClazz = ob;
 		this.listClazz = listClazz;
-		this.self = self;
 		this.opClazz = opClazz;
 		this.fields = fields;
 	}
@@ -65,7 +63,7 @@ public abstract class AnchorHolderMain<
 			throw new IllegalArgumentException("Field name cannot be null or blank");
 		}
 
-		final W w = this.newType(this.opClazz);
+		final W w = this.newOpClass();
 		w.setHolder((X) this);
 		w.setName(fieldName);
 		return w;
@@ -89,20 +87,11 @@ public abstract class AnchorHolderMain<
 		});
 	}
 
-	X addDto(final S dto) {
-		Optional.ofNullable(this.getDto()).ifPresentOrElse(s -> s.update(dto), () -> this.dto = dto);
-		return (X) this;
-	}
-
 	public S getDto() {
-		Optional.ofNullable(this.dto).ifPresentOrElse(s -> {
-			this.dto.addFilter(this.queries);
-			this.queries = null;
-		}, () -> {
-			this.dto = this.newObj().addFilter(this.queries);
-			this.queries = null;
-		});
-		return this.dto;
+		final S dto = this.newDto();
+		dto.addFilter(this.queries);
+		this.queries = null;
+		return dto;
 	}
 
 	// ----Instancietors
@@ -110,8 +99,19 @@ public abstract class AnchorHolderMain<
 		return newType((Class<? extends V>) this.listClazz.getRawType());
 	}
 
-	S newObj() {
-		return newType((Class<? extends S>) this.dtoClazz.getRawType());
+	S newDto() {
+		return this.dtoClazzInstance.orElseGet(() -> {
+			final S s = newType((Class<? extends S>) this.dtoClazz.getRawType());
+			this.dtoClazzInstance = Optional.of(s);
+			return s;
+		});
+	}
+	W newOpClass() {
+		return this.opClazzInstance.orElseGet(() -> {
+			final W s = newType((Class<? extends W>) this.opClazz.getRawType());
+			this.opClazzInstance = Optional.of(s);
+			return s;
+		});
 	}
 
 	<Y> Y newType(final TypeToken<Y> clazz) {
@@ -120,7 +120,6 @@ public abstract class AnchorHolderMain<
 
 	static <Y> Y newType(final Class<? extends Y> rawType) {
 		Objects.requireNonNull(rawType, "Target class cannot be null");
-
 		try {
 			@SuppressWarnings("unchecked")
 			final Constructor<Y> constructor = (Constructor<Y>) CONSTRUCTOR_CACHE.computeIfAbsent(rawType, clazz -> {

@@ -46,8 +46,7 @@ public class AnchorListGenerator {
 
 		// Constructor
 		final MethodSpec constructor = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
-				.addStatement("super($T.class, new $T<>() {}, $T.class)", ClassName.bestGuess(dtoClassName),
-						ClassName.get("com.google.common.reflect", "TypeToken"),
+				.addStatement("super(new $T<>() {}, $T.class)", ClassName.get("com.google.common.reflect", "TypeToken"),
 						ClassName.get(context.getPackageName(), anchorLogicalMainClassName))
 				.build();
 
