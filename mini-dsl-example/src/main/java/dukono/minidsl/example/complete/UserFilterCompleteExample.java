@@ -32,6 +32,7 @@ import dukono.minidsl.annotation.OperationType;
 // @formatter:on
 public class UserFilterCompleteExample {
 
+	
 	/**
 	 * Operaciones completas para filtrado de usuarios
 	 */
