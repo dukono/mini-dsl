@@ -37,7 +37,7 @@ public class UserFilterCompleteExample {
 	 */
 	public enum UserOperations implements OperationDefinition {
 		// Comparaciones exactas
-		EQUALS("equals", "eq", OperationType.WITH_ARG, "Equals"), NOT_EQUALS("notEquals", "ne", OperationType.WITH_ARG,
+		EQUALS("equalsTo", "eq", OperationType.WITH_ARG, "Equals"), NOT_EQUALS("notEquals", "ne", OperationType.WITH_ARG,
 				"Not equals"),
 
 		// Comparaciones numéricas

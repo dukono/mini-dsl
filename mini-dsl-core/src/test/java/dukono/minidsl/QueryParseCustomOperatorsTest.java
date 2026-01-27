@@ -15,7 +15,7 @@ class QueryParseCustomOperatorsTest {
 
 	@Test
 	void testParseWithCustomOperators() {
-		// Definir operadores personalizados
+
 		final Query.ParseConfig config = Query.ParseConfig.builder()
 				.valueOperators(new HashSet<>(Arrays.asList("equalTo", "greaterThan", "lessThan", "like")))
 				.noValueOperators(new HashSet<>(Arrays.asList("isNotNull", "isEmpty")))

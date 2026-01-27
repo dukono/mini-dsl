@@ -25,10 +25,18 @@ public class EcommerceCompleteExample {
 	 * Campos de producto con namespace
 	 */
 	public enum ProductFields {
-		ID("product.id"), NAME("product.name"), CATEGORY("product.category"), BRAND("product.brand"), PRICE(
-				"product.price"), STOCK("product.stock"), RATING("product.rating"), TAGS("product.tags"), DESCRIPTION(
-						"product.description"), CREATED_DATE("product.createdDate"), ACTIVE("product.active");
-
+		ID("product.id"), 
+		NAME("product.name"), 
+		CATEGORY("product.category"), 
+		BRAND("product.brand"), 
+		PRICE("product.price"), 
+		STOCK("product.stock"), 
+		RATING("product.rating"), 
+		TAGS("product.tags"),
+		DESCRIPTION("product.description"), 
+		CREATED_DATE("product.createdDate"), 
+		ACTIVE("product.active");
+		// @formatter:on
 		private final String value;
 
 		ProductFields(final String value) {
@@ -45,7 +53,7 @@ public class EcommerceCompleteExample {
 	 */
 	public enum ProductOperations implements OperationDefinition {
 		// Comparaciones básicas
-		EQUALS("equals", "eq", OperationType.WITH_ARG, "Equal to value"), NOT_EQUALS("notEquals", "ne",
+		EQUALS("equalsTo", "eq", OperationType.WITH_ARG, "Equal to value"), NOT_EQUALS("notEquals", "ne",
 				OperationType.WITH_ARG, "Not equal to value"),
 
 		// Comparaciones numéricas
