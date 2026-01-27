@@ -1,6 +1,6 @@
 package dukono.minidsl.example;
 
-import dukono.minidsl.example.generated.OrderApi;
+import dukono.minidsl.example.complete.EcommerceProductSearchApi;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -18,10 +18,10 @@ class Tests {
 	@Test
 	void testBasicDslOperations() {
 		// @formatter:off
-		final List<String> strings = OrderApi.from()
-				.field(fields -> fields.CREATED_DATE).noOpVals("aa")
+		final List<String> strings = EcommerceProductSearchApi.from()
+				.field(fields -> fields.CREATED_DATE).contains("aa")
 				.listCollapseAnd(List.of("a"), orderAnchorOne -> 
-					orderAnchorOne.field(orderFields -> orderFields.ORDER_ID).equalTo(String::toUpperCase))
+					orderAnchorOne.field(orderFields -> orderFields.CATEGORY).equalTo(String::toUpperCase))
 				.getDto().filtersAsString();
 		
 		assertThat(strings).hasSize(1);
@@ -38,11 +38,11 @@ class Tests {
 				OrderItem.builder().orderId("ORD-003").customerName("Bob Johnson").quantity(10).price(79.99).build());
 
 		// @formatter:off
-		final List<String> filters = OrderApi.from()
+		final List<String> filters = EcommerceProductSearchApi.from()
 				.listCollapseOr(items, anchorOne -> 
-					anchorOne.field(f -> f.ORDER_ID).equalTo(OrderItem::getOrderId)).other()
+					anchorOne.field(f -> f.ACTIVE).equalTo(OrderItem::getOrderId)).other()
 				.open()
-					.field(f -> f.CUSTOMER_NAME).equalTo("John Doe")
+					.field(f -> f.CREATED_DATE).equalTo("John Doe")
 				.close()
 				.getDto().filtersAsString();
 		// @formatter:on
@@ -56,26 +56,26 @@ class Tests {
 	void testComplexDslWithMultipleOperations() {
 
 		// @formatter:off
-		final OrderApi.OrderDto dto = OrderApi.from()
+		final EcommerceProductSearchApi.EcommerceProductSearchDto dto = EcommerceProductSearchApi.from()
 				.listCollapseOr(this.items,
-						api -> api.open().field(f -> f.ORDER_ID).equalTo(OrderItem::getOrderId).close()).other()
-				.listAddForEach(this.items, api -> api.field(f -> f.TOTAL_AMOUNT).contains(OrderItem::getPrice)).other()
-				.field(f -> f.STATUS).inValues(this.items.stream().map(OrderItem::getStatus).toList()).other()
-				.field(f -> f.ITEMS).greaterThanOrEqual(this.items.size())
+						api -> api.open().field(f -> f.CREATED_DATE).equalTo(OrderItem::getOrderId).close()).other()
+				.listAddForEach(this.items, api -> api.field(f -> f.CREATED_DATE).contains(OrderItem::getPrice)).other()
+				.field(f -> f.CREATED_DATE).between(this.items.stream().map(OrderItem::getStatus).toList()).other()
+				.field(f -> f.CREATED_DATE).greaterThan(this.items.size())
 				.getDto();
 		// ........
-		OrderApi.from(dto)
-				.replace(api -> api.field(f -> f.ITEMS).greaterThanOrEqual(3),
+		EcommerceProductSearchApi.from(dto)
+				.replace(api -> api.field(f -> f.ACTIVE).greaterThan(3),
 				api -> api.field(f -> f.CREATED_DATE).equalTo(LocalDate.now().toString()));
 
-		OrderApi.from(dto)
+		EcommerceProductSearchApi.from(dto)
 				.modify(api -> api
-						.field(f -> f.ORDER_ID).equalTo("WWW").other()
-						.field(fields -> fields.TOTAL_AMOUNT).contains("as")
-						.field(fields -> fields.STATUS).inValues(List.of(3,1)), comparator -> comparator.byKey);
+						.field(f -> f.BRAND).equalTo("WWW").other()
+						.field(fields -> fields.DESCRIPTION).contains("as")
+						.field(fields -> fields.PRICE).hasAnyTag(List.of(3,1)), comparator -> comparator.byKey);
 
-		OrderApi.from(dto)
-				.remove(remove-> remove.fullLine().byKeyValue(api -> api.field(f -> f.ORDER_ID).equalTo("WWW")));
+		EcommerceProductSearchApi.from(dto)
+				.remove(remove-> remove.fullLine().byKeyValue(api -> api.field(f -> f.DESCRIPTION).equalTo("WWW")));
 
 		// @formatter:on
 		final List<String> strings = dto.filtersAsString();
@@ -88,8 +88,8 @@ class Tests {
 
 		// @formatter:off
 
-		final OrderApi.OrderDto dto = OrderApi.from(strings)
-				.remove(removeBy -> removeBy.comparatorMatch().byKeyOperation(api -> api.field(fields -> fields.ORDER_ID).equalTo("aa"))).getDto();
+		final EcommerceProductSearchApi.EcommerceProductSearchDto dto = EcommerceProductSearchApi.from(strings)
+				.remove(removeBy -> removeBy.comparatorMatch().byKeyOperation(api -> api.field(fields -> fields.BRAND).equalTo("aa"))).getDto();
 
 		// @formatter:on
 		dto.filtersAsString();
