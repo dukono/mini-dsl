@@ -53,7 +53,7 @@ public class EcommerceCompleteExample {
 	 */
 	public enum ProductOperations implements OperationDefinition {
 		// Comparaciones básicas
-		EQUALS("equalsTo", "eq", OperationType.WITH_ARG, "Equal to value"), NOT_EQUALS("notEquals", "ne",
+		EQUALS("equalTo", "eq", OperationType.WITH_ARG, "Equal to value"), NOT_EQUALS("notEquals", "ne",
 				OperationType.WITH_ARG, "Not equal to value"),
 
 		// Comparaciones numéricas
