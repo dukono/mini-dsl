@@ -18,6 +18,8 @@ class Tests {
 	@Test
 	void testBasicDslOperations() {
 		// @formatter:off
+		
+		
 		final List<String> strings = OrderApi.from()
 				.field(fields -> fields.CREATED_DATE).noOpVals("aa")
 				.listCollapseAnd(List.of("a"), orderAnchorOne -> 
