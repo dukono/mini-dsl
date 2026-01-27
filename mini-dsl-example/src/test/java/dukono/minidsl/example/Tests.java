@@ -10,8 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class Tests {
 	final List<OrderItem> items = List.of(
-			OrderItem.builder().orderId("ORD-002").customerName("Jane Smith").quantity(3).price(149.99).status(2)
-					.build(),
+			OrderItem.builder().orderId("ORD-002").customerName("Jane Smith").quantity(3).price(149.99).status(2).build(),
 			OrderItem.builder().orderId("ORD-001").customerName("John Doe").quantity(5).price(99.99).status(1).build(),
 			OrderItem.builder().orderId("ORD-003").customerName("Bob Johnson").quantity(10).price(79.99).status(1)
 					.build());
